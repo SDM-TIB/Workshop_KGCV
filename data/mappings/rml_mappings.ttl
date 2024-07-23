@@ -1,0 +1,208 @@
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#> .
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix rml: <http://semweb.mmlab.be/ns/rml#> .
+@prefix ql: <http://semweb.mmlab.be/ns/ql#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix conf: <http://conference.eu/vocab/> .
+
+<DB_source> a d2rq:Database;
+  d2rq:jdbcDSN "SDMArticles";
+  d2rq:jdbcDriver "com.mysql.cj.jdbc.Driver";
+  d2rq:username "";
+  d2rq:password "".
+
+<Article> a rr:TriplesMap;
+    rml:logicalSource [
+        rml:source <DB_source>;
+        rr:sqlVersion rr:SQL2008;
+        rml:query "SELECT * FROM article"
+    ];
+    rr:subjectMap [
+        rr:template "http://conference.eu/entity/Article_{ID}";
+        rr:class conf:Article
+    ];
+    rr:predicateObjectMap [
+        rr:predicate conf:hasTitle;
+        rr:objectMap [
+            rml:reference "Title"
+        ]
+    ].
+
+<Article_Keywords> a rr:TriplesMap;
+    rml:logicalSource [
+        rml:source "/data/sources/Article_Keywords.csv";
+        rml:referenceFormulation ql:CSV
+    ];
+    rr:subjectMap [
+        rr:template "http://conference.eu/entity/Article_{Article}";
+        rr:class conf:Article
+    ];
+    rr:predicateObjectMap [
+        rr:predicate conf:hasKeyword;
+        rr:objectMap [
+            rml:reference "Keyword"
+        ]
+    ].
+
+<Author> a rr:TriplesMap;
+    rml:logicalSource [
+        rml:source <DB_source>;
+        rr:sqlVersion rr:SQL2008;
+        rml:query "SELECT * FROM author"
+    ];
+    rr:subjectMap [
+        rr:template "http://conference.eu/entity/Author_{ID}";
+        rr:class conf:Author
+    ];
+    rr:predicateObjectMap [
+        rr:predicate conf:hasName;
+        rr:objectMap [
+            rml:reference "Name"
+        ]
+    ];
+    rr:predicateObjectMap [
+        rr:predicate conf:hasEmail;
+        rr:objectMap [
+            rml:reference "Email"
+        ]
+    ].
+
+<ArticleAuthor> a rr:TriplesMap;
+    _______________________ [
+        rml:source "/data/sources/ArticleAuthor.csv";
+        rml:referenceFormulation ql:CSV
+    ];
+    rr:subjectMap [
+        rr:template "http://conference.eu/entity/Author_{Author}";
+        _______________________ conf:Author
+    ];
+    rr:predicateObjectMap [
+        _______________________ conf:authorOf;
+        rr:objectMap [
+            rr:parentTriplesMap <Article>;
+            _______________________ [
+                rr:child "Article";
+                rr:parent "ID";
+            ]
+        ]
+    ].
+
+<Affiliation> a rr:TriplesMap;
+    rml:logicalSource [
+        rml:source "/data/sources/Affiliation.csv";
+        rml:referenceFormulation ql:CSV
+    ];
+    rr:subjectMap [
+        rr:template "http://conference.eu/entity/Author_{Author}";
+        rr:class conf:Author
+    ];
+    rr:predicateObjectMap [
+        rr:predicate conf:hasAffiliation;
+        rr:objectMap [
+            rr:parentTriplesMap <Organization>;
+            rr:joinCondition [
+                rr:child "Organization";
+                rr:parent "ID";
+            ]
+        ]
+    ].
+
+<Organization> a rr:TriplesMap;
+    rml:logicalSource [
+        rml:source "/data/sources/Organization.csv";
+        _______________________
+    ];
+    _______________________ [
+        rr:template "http://conference.eu/entity/Organization_{ID}";
+        rr:class conf:Organization
+    ];
+    _______________________ [
+        rr:predicate conf:hasName;
+        rr:objectMap [
+            _______________________ "Name"
+        ]
+    ];
+    rr:predicateObjectMap [
+        rr:predicate conf:hasCountry;
+        _______________________ [
+            _______________________ "http://conference.eu/entity/{Country}"
+        ]
+    ].
+
+<Venue> a rr:TriplesMap;
+    rml:logicalSource [
+        rml:source <DB_source>;
+        rr:sqlVersion rr:SQL2008;
+        _______________________
+    ];
+    rr:subjectMap [
+        rr:template "http://conference.eu/entity/Venue_{ID}";
+        rr:class conf:Venue
+    ];
+    rr:predicateObjectMap [
+        rr:predicate conf:hasName;
+        rr:objectMap [
+            _______________________ "Name"
+        ]
+    ].
+
+<Conference> a rr:TriplesMap;
+    rml:logicalSource [
+        rml:source <DB_source>;
+        rr:sqlVersion rr:SQL2008;
+        rml:query "SELECT ID FROM venue WHERE Type='Conference'"
+    ];
+    rr:subjectMap [
+        rr:template "http://conference.eu/entity/Venue_{ID}";
+        rr:class conf:Conference
+    ].
+
+<Journal> a rr:TriplesMap;
+    rml:logicalSource [
+        rml:source <DB_source>;
+        rr:sqlVersion rr:SQL2008;
+        rml:query "SELECT ID FROM venue WHERE Type='Journal'"
+    ];
+    rr:subjectMap [
+        rr:template "http://conference.eu/entity/Venue_{ID}";
+        rr:class conf:Journal
+    ].
+
+<Publication> a rr:TriplesMap;
+    rml:logicalSource [
+        rml:source "/data/sources/Publication.csv";
+        rml:referenceFormulation ql:CSV
+    ];
+    rr:subjectMap [
+        rr:template "http://conference.eu/entity/Article_{Article}";
+        rr:class conf:Article
+    ];
+    rr:predicateObjectMap [
+        rr:predicate conf:publishedIn;
+        rr:objectMap [
+            rr:parentTriplesMap <Venue>;
+            rr:joinCondition [
+                rr:child "Venue";
+                rr:parent "ID";
+            ]
+        ]
+    ];
+    rr:predicateObjectMap [
+        rr:predicate conf:hasPublicationYear;
+        rr:objectMap [
+            rml:reference "Year";
+            rr:datatype xsd:int;
+        ]
+    ];
+    rr:predicateObjectMap [
+        rr:predicate conf:hasPublicationMonth;
+        rr:objectMap [
+            rml:reference "Month";
+            rr:datatype xsd:int;
+        ]
+    ].

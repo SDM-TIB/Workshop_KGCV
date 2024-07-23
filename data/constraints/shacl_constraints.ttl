@@ -1,0 +1,49 @@
+@prefix conf: <http://conference.eu/vocab/> .
+@prefix confS: <http://conference.eu/shapes/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+confS:Author  a  sh:NodeShape ;
+    sh:targetClass  conf:Author ;
+    sh:property [
+        sh:path  conf:hasName ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path  conf:authorOf ;
+        sh:minCount 1
+    ] ;
+    sh:property [
+        sh:path  conf:hasAffiliation ;
+        sh:qualifiedValueShape confS:Organization ;
+        sh:qualifiedMinCount 1
+    ] .
+
+confS:Organization  a  sh:NodeShape ;
+    sh:targetClass  conf:Organization ;
+    sh:property [
+        _______________________
+        _______________________
+        _______________________
+    ] ;
+    sh:property [
+        _______________________
+        _______________________
+        _______________________
+    ] .
+
+confS:Venue  a  sh:NodeShape ;
+    sh:targetClass  conf:Venue ;
+    sh:property [
+        sh:path  conf:hasName ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] .
+
+confS:Article  a  sh:NodeShape ;
+    _______________________
+    _______________________
+    _______________________
+    .

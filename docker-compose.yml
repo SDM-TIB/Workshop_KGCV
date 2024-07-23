@@ -1,0 +1,59 @@
+version: '2.3'
+
+services:
+  graphdb:
+    image: khaller/graphdb-free:10.6.2
+    container_name: sdm-kgcv-graphdb
+    volumes:
+      - type: bind
+        source: ./graphdb
+        target: /opt/graphdb/data
+    ports:
+      - '7200:7200'
+    networks:
+      - sdmkgcv
+
+  rdfizer:
+    container_name: sdm-kgcv-rdfizer
+    image: sdmtib/sdmrdfizer:4.7.4.9
+    volumes:
+      - type: bind
+        source: ./data
+        target: /data
+    networks:
+      - sdmkgcv
+
+  travshacl:
+    container_name: sdm-kgcv-travshacl
+    image: sdmtib/travshacl:1.7.1
+    ports:
+      - "7500:5000"
+    depends_on:
+      - graphdb
+    volumes:
+      - type: bind
+        source: ./data/constraints
+        target: /constraints
+    environment:
+      - SCHEMA_PATH=/constraints
+      - ENDPOINT=http://sdm-kgcv-graphdb:7200/repositories/kgcv
+    networks:
+      - sdmkgcv
+
+  mysql:
+    container_name: sdm-kgcv-mysql
+    image: mysql:8.4.1
+    volumes:
+      - ./data/sources/data.sql:/docker-entrypoint-initdb.d/data.sql
+    ports:
+      - '3400:3306'
+    networks:
+      - sdmkgcv
+    environment:
+      - MYSQL_DATABASE=sdm
+      - MYSQL_ROOT_PASSWORD=kgcv
+
+networks:
+  sdmkgcv:
+    external: false
+
